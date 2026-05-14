@@ -12,6 +12,7 @@ from .es_client import (
     bm25_search as _bm25,
     fuzzy_search as _fuzzy,
     knn_search as _knn,
+    list_docs as _list_docs,
 )
 from .indexer import reindex_new
 
@@ -146,6 +147,22 @@ def fuzzy_search(
     if include_file_content:
         _attach_file_content(hits)
     return hits
+
+
+@mcp.tool()
+def list_docs() -> list[dict[str, Any]]:
+    """List all available documentation files that have been indexed and can be searched.
+
+    Returns one entry per unique file path, with the document title (derived
+    from the first H1 heading or the filename) and a chunk count. Use this to
+    discover what docs exist before deciding which one to search or retrieve.
+
+    Returns:
+        List of dicts, each with: file (bare filename), path (relative path),
+        chunks (number of indexed chunks), title (document title or null if
+        not yet indexed).
+    """
+    return _list_docs(_es)
 
 
 @mcp.tool()

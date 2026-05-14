@@ -114,7 +114,7 @@ async def lifespan(app: FastAPI):
     await bridge.stop()
 
 
-app = FastAPI(title="docs-rag agent", lifespan=lifespan)
+app = FastAPI(title="docs-rag agent", lifespan=lifespan, docs_url="/swagger")
 
 
 @app.get("/")
@@ -142,6 +142,18 @@ async def admin_wipe():
     async with httpx.AsyncClient(timeout=30.0) as client:
         try:
             resp = await client.post(f"{APP_URL}/admin/wipe")
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=str(e))
+
+
+@app.get("/docs")
+async def list_docs():
+    """Proxy to daemon: list all indexed files with chunk counts and titles."""
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            resp = await client.get(f"{APP_URL}/docs")
             resp.raise_for_status()
             return resp.json()
         except Exception as e:

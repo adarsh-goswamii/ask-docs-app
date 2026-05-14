@@ -11,6 +11,7 @@ from .es_client import (
     knn_search,
     bm25_search,
     fuzzy_search,
+    list_docs,
 )
 from .embedder import Embedder
 from .indexer import reindex_new
@@ -36,7 +37,7 @@ async def lifespan(app: FastAPI):
     app.state.es.close()
 
 
-app = FastAPI(title="docs-rag daemon", lifespan=lifespan)
+app = FastAPI(title="docs-rag daemon", lifespan=lifespan, docs_url="/swagger")
 
 
 @app.get("/health")
@@ -93,6 +94,12 @@ def search_keyword(req: SearchRequest) -> list[dict[str, Any]]:
 def search_fuzzy(req: SearchRequest) -> list[dict[str, Any]]:
     """Typo-tolerant fuzzy search. Best when the query may be misspelled."""
     return fuzzy_search(app.state.es, req.query, top_k=req.top_k, tags=req.tags, folder=req.folder)
+
+
+@app.get("/docs")
+def docs():
+    """Return all indexed files with chunk counts and titles."""
+    return list_docs(app.state.es)
 
 
 @app.get("/stats")
