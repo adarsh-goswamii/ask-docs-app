@@ -122,6 +122,11 @@ def index():
     return FileResponse(STATIC_DIR / "index.html")
 
 
+@app.get("/favicon.svg")
+def favicon():
+    return FileResponse(STATIC_DIR / "favicon.svg", media_type="image/svg+xml")
+
+
 @app.get("/healthz")
 async def healthz():
     return {

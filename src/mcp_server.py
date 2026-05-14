@@ -4,17 +4,19 @@ from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
-from .config import DOCS_ROOT
+from .config import DOCS_ROOT, INDEX_NAME
 from .embedder import Embedder
 from .es_client import (
     get_client,
+    create_index,
     bm25_search as _bm25,
     fuzzy_search as _fuzzy,
     knn_search as _knn,
 )
+from .indexer import reindex_new
 
 _HTTP_PORT = int(os.environ.get("MCP_HTTP_PORT", "8001"))
-mcp = FastMCP("docs-rag", host="0.0.0.0", port=_HTTP_PORT)
+mcp = FastMCP("ask doc", host="0.0.0.0", port=_HTTP_PORT)
 
 _es = get_client()
 _embedder = Embedder()
@@ -144,6 +146,41 @@ def fuzzy_search(
     if include_file_content:
         _attach_file_content(hits)
     return hits
+
+
+@mcp.tool()
+def wipe_index() -> dict[str, Any]:
+    """Delete and recreate the vector index, removing all indexed documents.
+
+    Use this to reset the index when you want to start fresh — for example,
+    after schema changes, after removing many stale docs, or if the index has
+    become corrupted. All data is permanently removed; call index_docs
+    afterwards to re-populate.
+
+    Returns:
+        A dict with 'wiped' (True) and 'index' (the index name).
+    """
+    if _es.indices.exists(index=INDEX_NAME):
+        _es.indices.delete(index=INDEX_NAME)
+    create_index(_es)
+    return {"wiped": True, "index": INDEX_NAME}
+
+
+@mcp.tool()
+def index_docs() -> dict[str, Any]:
+    """Incrementally index new documents from the docs vault into the vector store.
+
+    Scans the docs root for markdown files not yet indexed and adds them.
+    Already-indexed documents are skipped (incremental, not full re-index).
+    Call wipe_index first if you need a full re-index from scratch.
+
+    Returns:
+        A dict with: scanned (total .md files found), new (docs chunked and
+        added), chunks_added, skipped (docs without indexable chunks),
+        indexed_at (ISO timestamp).
+    """
+    create_index(_es)
+    return reindex_new(_es, _embedder)
 
 
 def main() -> None:
