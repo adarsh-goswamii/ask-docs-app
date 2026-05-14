@@ -4,6 +4,7 @@ from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
+from .config import DOCS_ROOT
 from .embedder import Embedder
 from .es_client import (
     get_client,
@@ -27,12 +28,28 @@ def _opt_list(value: Any) -> list[str] | None:
     return list(value) or None
 
 
+def _attach_file_content(hits: list[dict]) -> None:
+    cache: dict[str, str | None] = {}
+    for hit in hits:
+        rel = hit.get("path")
+        if rel is None:
+            hit["file_content"] = None
+            continue
+        if rel not in cache:
+            try:
+                cache[rel] = (DOCS_ROOT / rel).read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                cache[rel] = None
+        hit["file_content"] = cache[rel]
+
+
 @mcp.tool()
 def rag_search(
     query: str,
     tags: list[str] | None = None,
     folder: str | None = None,
     top_k: int = 5,
+    include_file_content: bool = False,
 ) -> list[dict[str, Any]]:
     """Semantic (vector) search over the docs vault.
 
@@ -49,12 +66,18 @@ def rag_search(
         folder: Optional top-level folder name to restrict search to,
             e.g. "PeakXV-Branding" or "trm".
         top_k: How many results to return (default 5).
+        include_file_content: If True, each hit includes a 'file_content' key
+            with the full text of the source .md file (null if not found on disk).
 
     Returns:
         List of hits, each with: path, title, folder, tags, snippet, score.
+        If include_file_content is True, also includes file_content.
     """
     vec = _embedder.embed(query)
-    return _knn(_es, vec, top_k=top_k, tags=_opt_list(tags), folder=folder)
+    hits = _knn(_es, vec, top_k=top_k, tags=_opt_list(tags), folder=folder)
+    if include_file_content:
+        _attach_file_content(hits)
+    return hits
 
 
 @mcp.tool()
@@ -63,6 +86,7 @@ def keyword_search(
     tags: list[str] | None = None,
     folder: str | None = None,
     top_k: int = 5,
+    include_file_content: bool = False,
 ) -> list[dict[str, Any]]:
     """Exact / BM25 keyword search over the docs vault.
 
@@ -76,11 +100,17 @@ def keyword_search(
         tags: Optional list of wiki-tag names (without brackets) to filter by.
         folder: Optional top-level folder to restrict the search to.
         top_k: How many results to return (default 5).
+        include_file_content: If True, each hit includes a 'file_content' key
+            with the full text of the source .md file (null if not found on disk).
 
     Returns:
         List of hits, each with: path, title, folder, tags, snippet, score.
+        If include_file_content is True, also includes file_content.
     """
-    return _bm25(_es, query, top_k=top_k, tags=_opt_list(tags), folder=folder)
+    hits = _bm25(_es, query, top_k=top_k, tags=_opt_list(tags), folder=folder)
+    if include_file_content:
+        _attach_file_content(hits)
+    return hits
 
 
 @mcp.tool()
@@ -89,6 +119,7 @@ def fuzzy_search(
     tags: list[str] | None = None,
     folder: str | None = None,
     top_k: int = 5,
+    include_file_content: bool = False,
 ) -> list[dict[str, Any]]:
     """Fuzzy / typo-tolerant search over the docs vault.
 
@@ -102,11 +133,17 @@ def fuzzy_search(
         tags: Optional list of wiki-tag names (without brackets) to filter by.
         folder: Optional top-level folder to restrict the search to.
         top_k: How many results to return (default 5).
+        include_file_content: If True, each hit includes a 'file_content' key
+            with the full text of the source .md file (null if not found on disk).
 
     Returns:
         List of hits, each with: path, title, folder, tags, snippet, score.
+        If include_file_content is True, also includes file_content.
     """
-    return _fuzzy(_es, query, top_k=top_k, tags=_opt_list(tags), folder=folder)
+    hits = _fuzzy(_es, query, top_k=top_k, tags=_opt_list(tags), folder=folder)
+    if include_file_content:
+        _attach_file_content(hits)
+    return hits
 
 
 def main() -> None:

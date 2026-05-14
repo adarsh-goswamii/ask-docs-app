@@ -16,7 +16,7 @@ from mcp.client.streamable_http import streamablehttp_client
 
 MCP_URL = os.environ.get("MCP_URL", "http://127.0.0.1:8001/mcp/")
 APP_URL = os.environ.get("APP_URL", "http://app:8000")
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 MAX_TURNS = int(os.environ.get("MAX_TOOL_TURNS", "6"))
 STATIC_DIR = Path(__file__).parent / "static"
@@ -137,6 +137,17 @@ async def admin_wipe():
     async with httpx.AsyncClient(timeout=30.0) as client:
         try:
             resp = await client.post(f"{APP_URL}/admin/wipe")
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=str(e))
+
+
+@app.get("/stats")
+async def stats():
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            resp = await client.get(f"{APP_URL}/stats")
             resp.raise_for_status()
             return resp.json()
         except Exception as e:
