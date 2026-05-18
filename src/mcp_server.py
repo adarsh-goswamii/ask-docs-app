@@ -166,6 +166,30 @@ def list_docs() -> list[dict[str, Any]]:
 
 
 @mcp.tool()
+def get_doc(path: str) -> dict[str, Any]:
+    """Retrieve the full content of a specific markdown document by its path.
+
+    Use this after a search to read the complete source file — not just the
+    matched chunk, but the entire original .md document. Pass the 'path' field
+    from any search result directly to this tool.
+    Examples: "trm/onboarding.md", "PeakXV-Branding/voice.md".
+
+    Args:
+        path: Relative path to the document, exactly as returned in the 'path'
+            field of rag_search, keyword_search, or fuzzy_search results.
+
+    Returns:
+        Dict with: path (echoed back), found (bool), content (full file text
+        or null if the file no longer exists on disk).
+    """
+    try:
+        content = (DOCS_ROOT / path).read_text(encoding="utf-8", errors="replace")
+        return {"path": path, "found": True, "content": content}
+    except OSError:
+        return {"path": path, "found": False, "content": None}
+
+
+@mcp.tool()
 def wipe_index() -> dict[str, Any]:
     """Delete and recreate the vector index, removing all indexed documents.
 

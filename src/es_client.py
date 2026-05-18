@@ -60,7 +60,7 @@ def list_docs(es: Elasticsearch) -> list[dict[str, Any]]:
                     "terms": {"field": "path", "size": 10000},
                     "aggs": {
                         "doc_title": {
-                            "top_hits": {"size": 1, "_source": ["title"]}
+                            "top_hits": {"size": 1, "_source": ["title", "tags", "folder"]}
                         }
                     },
                 }
@@ -71,12 +71,14 @@ def list_docs(es: Elasticsearch) -> list[dict[str, Any]]:
     for bucket in resp["aggregations"]["by_path"]["buckets"]:
         path: str = bucket["key"]
         hits = bucket["doc_title"]["hits"]["hits"]
-        title = hits[0]["_source"].get("title") if hits else None
+        src = hits[0]["_source"] if hits else {}
         out.append({
             "file": path.split("/")[-1],
             "path": path,
             "chunks": bucket["doc_count"],
-            "title": title,
+            "title": src.get("title"),
+            "tags": src.get("tags", []),
+            "folder": src.get("folder", ""),
         })
     return sorted(out, key=lambda x: x["path"])
 

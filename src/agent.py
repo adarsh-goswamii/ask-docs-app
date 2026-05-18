@@ -9,6 +9,7 @@ from typing import Any, AsyncIterator
 import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from mcp import ClientSession
@@ -115,16 +116,12 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="docs-rag agent", lifespan=lifespan, docs_url="/swagger")
+app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="vite-assets")
 
 
 @app.get("/")
 def index():
     return FileResponse(STATIC_DIR / "index.html")
-
-
-@app.get("/favicon.svg")
-def favicon():
-    return FileResponse(STATIC_DIR / "favicon.svg", media_type="image/svg+xml")
 
 
 @app.get("/healthz")
@@ -154,6 +151,17 @@ async def list_docs():
     async with httpx.AsyncClient(timeout=10.0) as client:
         try:
             resp = await client.get(f"{APP_URL}/docs")
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=str(e))
+
+
+@app.get("/docs/content")
+async def get_doc_content(path: str):
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            resp = await client.get(f"{APP_URL}/docs/content", params={"path": path})
             resp.raise_for_status()
             return resp.json()
         except Exception as e:
@@ -328,3 +336,10 @@ async def chat(req: ChatRequest):
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+@app.get("/{full_path:path}")
+def spa_fallback(full_path: str):
+    """Serve index.html for client-side routes (/files, /graph) so deep links
+    and reloads don't 404. Declared last so real API routes take precedence."""
+    return FileResponse(STATIC_DIR / "index.html")
