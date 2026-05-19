@@ -14,7 +14,7 @@ from .es_client import (
     list_docs,
 )
 from .embedder import Embedder
-from .indexer import reindex_new
+from .indexer import smart_reindex
 
 
 class SearchRequest(BaseModel):
@@ -59,7 +59,7 @@ def reindex():
     es = app.state.es
     create_index(es)
     try:
-        result = reindex_new(es, app.state.embedder)
+        result = smart_reindex(es, app.state.embedder)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"reindex failed: {e}")
     return result

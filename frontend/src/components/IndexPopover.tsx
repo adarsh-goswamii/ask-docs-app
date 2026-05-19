@@ -25,7 +25,7 @@ export function IndexPopover({
         ))}
       </div>
       <Button onClick={onReindex} loading={isReindexing} style={{ width: '100%' }}>
-        Reindex new docs
+        Reindex docs
       </Button>
       <Button variant="soft" color="red" onClick={onRequestWipe} style={{ width: '100%' }}>
         Wipe &amp; reindex
