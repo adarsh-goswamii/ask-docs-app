@@ -14,7 +14,7 @@ from .es_client import (
     knn_search as _knn,
     list_docs as _list_docs,
 )
-from .indexer import reindex_new
+from .indexer import smart_reindex
 
 _HTTP_PORT = int(os.environ.get("MCP_HTTP_PORT", "8001"))
 mcp = FastMCP("ask doc", host="0.0.0.0", port=_HTTP_PORT)
@@ -209,19 +209,19 @@ def wipe_index() -> dict[str, Any]:
 
 @mcp.tool()
 def index_docs() -> dict[str, Any]:
-    """Incrementally index new documents from the docs vault into the vector store.
+    """Smart-index documents from the docs vault: new files are added, changed
+    files are re-indexed, and unchanged files are skipped.
 
-    Scans the docs root for markdown files not yet indexed and adds them.
-    Already-indexed documents are skipped (incremental, not full re-index).
+    Uses MD5 hashes to detect which files have changed since the last index run.
     Call wipe_index first if you need a full re-index from scratch.
 
     Returns:
-        A dict with: scanned (total .md files found), new (docs chunked and
-        added), chunks_added, skipped (docs without indexable chunks),
-        indexed_at (ISO timestamp).
+        A dict with: scanned (total .md files found), new (newly indexed docs),
+        updated (re-indexed due to content changes), skipped (unchanged docs),
+        chunks_added, indexed_at (ISO timestamp).
     """
     create_index(_es)
-    return reindex_new(_es, _embedder)
+    return smart_reindex(_es, _embedder)
 
 
 def main() -> None:

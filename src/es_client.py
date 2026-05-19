@@ -16,6 +16,7 @@ def index_mapping() -> dict[str, Any]:
             "properties": {
                 "path": {"type": "keyword"},
                 "chunk_id": {"type": "keyword"},
+                "file_hash": {"type": "keyword"},
                 "title": {
                     "type": "text",
                     "fields": {"raw": {"type": "keyword"}},
@@ -43,6 +44,11 @@ def index_mapping() -> dict[str, Any]:
 
 def create_index(es: Elasticsearch) -> bool:
     if es.indices.exists(index=INDEX_NAME):
+        # Idempotent — adds new fields to existing mapping without touching data
+        es.indices.put_mapping(
+            index=INDEX_NAME,
+            body={"properties": {"file_hash": {"type": "keyword"}}},
+        )
         return False
     es.indices.create(index=INDEX_NAME, body=index_mapping())
     return True
@@ -97,6 +103,42 @@ def indexed_paths(es: Elasticsearch) -> set[str]:
     for bucket in resp["aggregations"]["paths"]["buckets"]:
         out.add(bucket["key"])
     return out
+
+
+def indexed_file_hashes(es: Elasticsearch) -> dict[str, str | None]:
+    if not es.indices.exists(index=INDEX_NAME):
+        return {}
+    resp = es.search(
+        index=INDEX_NAME,
+        body={
+            "size": 0,
+            "aggs": {
+                "by_path": {
+                    "terms": {"field": "path", "size": 10000},
+                    "aggs": {
+                        "doc_hash": {
+                            "top_hits": {"size": 1, "_source": ["file_hash"]}
+                        }
+                    },
+                }
+            },
+        },
+    )
+    out: dict[str, str | None] = {}
+    for bucket in resp["aggregations"]["by_path"]["buckets"]:
+        path = bucket["key"]
+        hits = bucket["doc_hash"]["hits"]["hits"]
+        src = hits[0]["_source"] if hits else {}
+        out[path] = src.get("file_hash")
+    return out
+
+
+def delete_by_path(es: Elasticsearch, path: str) -> None:
+    es.delete_by_query(
+        index=INDEX_NAME,
+        body={"query": {"term": {"path": path}}},
+        refresh=True,
+    )
 
 
 def bulk_index(es: Elasticsearch, docs: Iterable[dict[str, Any]]) -> int:

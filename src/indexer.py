@@ -1,4 +1,5 @@
 from __future__ import annotations
+import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -6,7 +7,7 @@ from typing import Any
 from .config import DOCS_ROOT, EXCLUDE_DIRS
 from .chunker import chunk_file
 from .embedder import Embedder
-from .es_client import bulk_index, indexed_paths
+from .es_client import bulk_index, indexed_file_hashes, delete_by_path
 
 
 def discover_markdown(root: Path) -> list[tuple[str, Path]]:
@@ -19,22 +20,36 @@ def discover_markdown(root: Path) -> list[tuple[str, Path]]:
     return sorted(found)
 
 
-def reindex_new(es, embedder: Embedder) -> dict[str, Any]:
-    existing = indexed_paths(es)
+def smart_reindex(es, embedder: Embedder) -> dict[str, Any]:
+    existing_hashes = indexed_file_hashes(es)
     all_files = discover_markdown(DOCS_ROOT)
-    new_files = [(rel, p) for rel, p in all_files if rel not in existing]
 
     now = datetime.now(timezone.utc).isoformat()
+    new_count = 0
+    updated_count = 0
+    skipped_count = 0
     chunks_added = 0
-    docs_with_chunks = 0
     chunk_docs: list[dict[str, Any]] = []
 
-    for rel, abs_p in new_files:
-        file_chunks = chunk_file(rel, abs_p)
-        if not file_chunks:
-            continue
-        docs_with_chunks += 1
-        for chunk in file_chunks:
+    def flush() -> None:
+        nonlocal chunks_added
+        if chunk_docs:
+            chunks_added += bulk_index(es, chunk_docs)
+            chunk_docs.clear()
+
+    for rel, abs_p in all_files:
+        file_hash = hashlib.md5(abs_p.read_bytes()).hexdigest()
+
+        if rel in existing_hashes:
+            if existing_hashes[rel] == file_hash:
+                skipped_count += 1
+                continue
+            delete_by_path(es, rel)
+            updated_count += 1
+        else:
+            new_count += 1
+
+        for chunk in chunk_file(rel, abs_p):
             vec = embedder.embed(chunk.body)
             chunk_docs.append(
                 {
@@ -44,21 +59,21 @@ def reindex_new(es, embedder: Embedder) -> dict[str, Any]:
                     "title": chunk.title,
                     "body": chunk.body,
                     "tags": chunk.tags,
+                    "file_hash": file_hash,
                     "embedding": vec,
                     "indexed_at": now,
                 }
             )
         if len(chunk_docs) >= 50:
-            chunks_added += bulk_index(es, chunk_docs)
-            chunk_docs = []
+            flush()
 
-    if chunk_docs:
-        chunks_added += bulk_index(es, chunk_docs)
+    flush()
 
     return {
         "scanned": len(all_files),
-        "new": docs_with_chunks,
+        "new": new_count,
+        "updated": updated_count,
+        "skipped": skipped_count,
         "chunks_added": chunks_added,
-        "skipped": len(all_files) - docs_with_chunks,
         "indexed_at": now,
     }
