@@ -24,6 +24,12 @@ export function ChatView({ apiKey, onAddKey }: ChatViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const stickRef = useRef(true)
 
+  useEffect(() => {
+    if (openSource) document.body.classList.add('drawer-open')
+    else document.body.classList.remove('drawer-open')
+    return () => document.body.classList.remove('drawer-open')
+  }, [openSource])
+
   const newChat = () => {
     abortRef.current?.abort()
     setMessages([])

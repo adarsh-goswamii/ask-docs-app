@@ -81,3 +81,5 @@ button { font: inherit; cursor: pointer; }
     rgba(74,168,255,0.16) 0%, rgba(124,110,250,0.10) 35%, transparent 70%);
   animation-delay: -9s;
 }
+.cosmic-bg { transition: opacity 0.25s ease; }
+body.drawer-open .cosmic-bg { opacity: 0; }
