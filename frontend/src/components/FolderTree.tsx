@@ -27,6 +27,14 @@ function FileDocIcon() {
   )
 }
 
+function FileGenericIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, opacity: 0.4 }}>
+      <path d="M2 1.5A.5.5 0 0 1 2.5 1h5.293a.5.5 0 0 1 .353.146l1.708 1.708a.5.5 0 0 1 .146.353V10.5a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-9z"/>
+    </svg>
+  )
+}
+
 function FolderClosedIcon() {
   return (
     <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor" style={{ flexShrink: 0, opacity: 0.6 }}>
@@ -94,7 +102,7 @@ export function FolderTree({ nodes, selectedPath, onSelectFile }: FolderTreeProp
             userSelect: 'none',
           }}
         >
-          <FileDocIcon />
+          {node.name.toLowerCase().endsWith('.md') ? <FileDocIcon /> : <FileGenericIcon />}
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {node.title ?? node.name}
           </span>

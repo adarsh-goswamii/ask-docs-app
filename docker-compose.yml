@@ -44,7 +44,7 @@ services:
       - EMBED_DIMS=768
       - INDEX_NAME=docs
     volumes:
-      - ${DOCS_ROOT_HOST:-/Users/adarshgoswami/Documents/docs}:/docs:ro
+      - ${DOCS_ROOT_HOST:-/Users/adarshgoswami/Documents/docs}:/docs
     ports:
       - "127.0.0.1:${HOST_PORT:-49823}:8000"
     depends_on:

@@ -45,7 +45,11 @@ def smart_reindex(es, embedder: Embedder) -> dict[str, Any]:
             deleted_count += 1
 
     for rel, abs_p in all_files:
-        file_hash = hashlib.md5(abs_p.read_bytes()).hexdigest()
+        try:
+            file_hash = hashlib.md5(abs_p.read_bytes()).hexdigest()
+        except OSError:
+            skipped_count += 1
+            continue
 
         if rel in existing_hashes:
             if existing_hashes[rel] == file_hash:

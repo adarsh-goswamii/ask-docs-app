@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from .config import INDEX_NAME, DOCS_ROOT
+from .config import INDEX_NAME, DOCS_ROOT, EXCLUDE_DIRS, SUPPORTED_EXTENSIONS
 from .es_client import (
     get_client,
     create_index,
@@ -97,6 +97,23 @@ def search_fuzzy(req: SearchRequest) -> list[dict[str, Any]]:
     return fuzzy_search(app.state.es, req.query, top_k=req.top_k, tags=req.tags, folder=req.folder)
 
 
+@app.get("/files")
+def list_all_files():
+    """List all supported files in DOCS_ROOT recursively."""
+    root = DOCS_ROOT.resolve()
+    paths = []
+    for f in sorted(root.rglob("*")):
+        if not f.is_file():
+            continue
+        if f.suffix.lower() not in SUPPORTED_EXTENSIONS:
+            continue
+        rel = f.relative_to(root)
+        if any(part in EXCLUDE_DIRS for part in rel.parts[:-1]):
+            continue
+        paths.append(str(rel))
+    return {"files": paths}
+
+
 @app.get("/docs")
 def docs():
     """Return all indexed files with chunk counts and titles."""
@@ -113,7 +130,12 @@ def get_doc_content(path: str = Query(..., min_length=1)):
         raise HTTPException(status_code=400, detail="Invalid path")
     if not abs_path.exists() or not abs_path.is_file():
         raise HTTPException(status_code=404, detail="File not found")
-    return {"path": path, "content": abs_path.read_text(encoding="utf-8", errors="replace")}
+    try:
+        with open(abs_path, "rb") as fh:
+            content = fh.read().decode("utf-8", errors="replace")
+    except OSError as e:
+        raise HTTPException(status_code=500, detail=f"Could not read file: {e}")
+    return {"path": path, "content": content}
 
 
 @app.delete("/docs")

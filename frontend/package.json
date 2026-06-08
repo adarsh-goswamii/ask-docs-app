@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@adarsh_goswami/design": "^0.1.16-dev",
+    "@adarsh_goswami/design": "^0.1.19-dev",
     "@radix-ui/themes": "^3.3.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

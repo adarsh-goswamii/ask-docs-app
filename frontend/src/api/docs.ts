@@ -17,3 +17,9 @@ export async function deleteDoc(path: string): Promise<void> {
   const r = await fetch(`/docs?path=${encodeURIComponent(path)}`, { method: 'DELETE' })
   if (!r.ok) throw new Error(`delete failed: ${r.status}`)
 }
+
+export async function fetchAllFiles(): Promise<string[]> {
+  const r = await fetch('/api/files')
+  if (!r.ok) throw new Error(`/api/files failed: ${r.status}`)
+  return ((await r.json()) as { files: string[] }).files
+}

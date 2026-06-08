@@ -5,7 +5,7 @@
     "": {
       "name": "ask-docs-frontend",
       "dependencies": {
-        "@adarsh_goswami/design": "^0.1.16-dev",
+        "@adarsh_goswami/design": "^0.1.19-dev",
         "@radix-ui/themes": "^3.3.0",
         "react": "^19.2.4",
         "react-dom": "^19.2.4",
@@ -24,7 +24,7 @@
     },
   },
   "packages": {
-    "@adarsh_goswami/design": ["@adarsh_goswami/design@0.1.16-dev", "", { "dependencies": { "react-markdown": "^10.1.0", "rehype-highlight": "^7.0.2", "remark-gfm": "^4.0.1" }, "peerDependencies": { "@radix-ui/themes": ">=3.0.0", "react": ">=18.0.0", "react-dom": ">=18.0.0", "tailwindcss": "^4.2.2" } }, "sha512-lszSUExJXxlMIqJ78jqLuk6tL+HdIorB0opWwVaaTerDaq7HdxT6njTC38e6ZbA8lIpJ/NX9sSvFsvM9ampbsQ=="],
+    "@adarsh_goswami/design": ["@adarsh_goswami/design@0.1.19-dev", "", { "dependencies": { "react-markdown": "^10.1.0", "rehype-highlight": "^7.0.2", "remark-gfm": "^4.0.1" }, "peerDependencies": { "@radix-ui/themes": ">=3.0.0", "react": ">=18.0.0", "react-dom": ">=18.0.0", "tailwindcss": "^4.2.2" } }, "sha512-RGMZsyLdfPq3QyAxJwoyOF4XVxKrB9NxfqaMZ/3rJ5TiSPKHZBB7G3TlGo/y6tnq3E4xpHp3GlbYFE0Cj7z84A=="],
 
     "@emnapi/core": ["@emnapi/core@1.10.0", "", { "dependencies": { "@emnapi/wasi-threads": "1.2.1", "tslib": "^2.4.0" } }, "sha512-yq6OkJ4p82CAfPl0u9mQebQHKPJkY7WrIuk205cTYnYe+k2Z8YBh11FrbRG/H6ihirqcacOgl2BIO8oyMQLeXw=="],
 

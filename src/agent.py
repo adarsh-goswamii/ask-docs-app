@@ -119,8 +119,13 @@ app = FastAPI(title="docs-rag agent", lifespan=lifespan, docs_url="/swagger")
 app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="vite-assets")
 
 
+@app.get("/favicon.ico")
+def favicon_ico():
+    return FileResponse(STATIC_DIR / "favicon.ico", media_type="image/x-icon")
+
+
 @app.get("/favicon.svg")
-def favicon():
+def favicon_svg():
     return FileResponse(STATIC_DIR / "favicon.svg", media_type="image/svg+xml")
 
 
@@ -150,12 +155,35 @@ async def admin_wipe():
             raise HTTPException(status_code=502, detail=str(e))
 
 
+@app.get("/api/files")
+async def list_all_files():
+    """Proxy to daemon: list every file in DOCS_ROOT regardless of type."""
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            resp = await client.get(f"{APP_URL}/files")
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=str(e))
+
+
 @app.get("/docs")
 async def list_docs():
     """Proxy to daemon: list all indexed files with chunk counts and titles."""
     async with httpx.AsyncClient(timeout=10.0) as client:
         try:
             resp = await client.get(f"{APP_URL}/docs")
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=str(e))
+
+
+@app.delete("/docs")
+async def delete_doc(path: str):
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            resp = await client.delete(f"{APP_URL}/docs", params={"path": path})
             resp.raise_for_status()
             return resp.json()
         except Exception as e:

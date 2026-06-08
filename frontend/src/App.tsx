@@ -50,6 +50,7 @@ export default function App() {
       const r = await fetch('/admin/reindex', { method: 'POST' })
       const j = await r.json()
       setToast({ text: `Done — ${j.new ?? 0} new, ${j.updated ?? 0} updated, ${j.deleted ?? 0} deleted, ${j.skipped ?? 0} skipped, ${j.chunks_added ?? 0} chunks`, kind: 'success' })
+      setTimeout(() => window.location.reload(), 1500)
     } catch {
       setToast({ text: 'Reindex failed.', kind: 'error' })
     } finally {

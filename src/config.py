@@ -12,7 +12,9 @@ EMBED_DIMS = int(os.environ.get("EMBED_DIMS", "768"))
 
 DAEMON_URL = os.environ.get("DAEMON_URL", "http://127.0.0.1:8000")
 
-EXCLUDE_DIRS = {".rag", ".obsidian", ".git", "node_modules", "_tags"}
+EXCLUDE_DIRS = {".rag", ".obsidian", ".git", "node_modules", "_tags", ".claude"}
+
+SUPPORTED_EXTENSIONS = frozenset({".md", ".svg"})
 
 CHUNK_MAX_CHARS = 800
 SNIPPET_CHARS = 600

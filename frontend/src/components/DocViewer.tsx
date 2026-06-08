@@ -26,8 +26,12 @@ export function DocViewer({ path, onDelete }: DocViewerProps) {
   const [error, setError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
 
+  const ext = path?.split('.').pop()?.toLowerCase() ?? ''
+  const isMarkdown = ext === 'md'
+  const isSvg = ext === 'svg'
+
   useEffect(() => {
-    if (!path) return
+    if (!path || (!isMarkdown && !isSvg)) return
     setLoading(true)
     setContent(null)
     setError(null)
@@ -49,6 +53,23 @@ export function DocViewer({ path, onDelete }: DocViewerProps) {
   }
 
   if (!path) return <Centered>Select a file to read it.</Centered>
+
+  if (!isMarkdown && !isSvg) {
+    return (
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        <div style={{ padding: '32px 40px 64px' }}>
+          <p style={{
+            margin: '0 0 24px', fontSize: 11, fontFamily: 'var(--brand-font-mono)',
+            color: 'var(--text-muted)', letterSpacing: '0.03em',
+          }}>
+            {path}
+          </p>
+          <Centered>File type not supported for preview.</Centered>
+        </div>
+      </div>
+    )
+  }
+
   if (loading) return <Centered><Spinner size="3" /></Centered>
 
   if (error) {
@@ -57,6 +78,26 @@ export function DocViewer({ path, onDelete }: DocViewerProps) {
         <Callout.Root color="red">
           <Callout.Text>{error}</Callout.Text>
         </Callout.Root>
+      </div>
+    )
+  }
+
+  if (isSvg && content) {
+    return (
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        <div style={{ padding: '32px 40px 64px' }}>
+          <p style={{
+            margin: '0 0 24px', fontSize: 11, fontFamily: 'var(--brand-font-mono)',
+            color: 'var(--text-muted)', letterSpacing: '0.03em',
+          }}>
+            {path}
+          </p>
+          <img
+            src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(content)}`}
+            alt={path.split('/').pop()}
+            style={{ maxWidth: '100%', display: 'block' }}
+          />
+        </div>
       </div>
     )
   }
