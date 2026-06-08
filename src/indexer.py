@@ -37,6 +37,13 @@ def smart_reindex(es, embedder: Embedder) -> dict[str, Any]:
             chunks_added += bulk_index(es, chunk_docs)
             chunk_docs.clear()
 
+    current_paths = {rel for rel, _ in all_files}
+    deleted_count = 0
+    for rel in existing_hashes:
+        if rel not in current_paths:
+            delete_by_path(es, rel)
+            deleted_count += 1
+
     for rel, abs_p in all_files:
         file_hash = hashlib.md5(abs_p.read_bytes()).hexdigest()
 
@@ -73,6 +80,7 @@ def smart_reindex(es, embedder: Embedder) -> dict[str, Any]:
         "scanned": len(all_files),
         "new": new_count,
         "updated": updated_count,
+        "deleted": deleted_count,
         "skipped": skipped_count,
         "chunks_added": chunks_added,
         "indexed_at": now,
