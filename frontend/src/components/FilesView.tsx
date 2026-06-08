@@ -25,6 +25,11 @@ export function FilesView() {
     if (openPath) setSelectedPath(openPath)
   }, [location.state])
 
+  function handleDelete(deletedPath: string) {
+    setDocs(prev => prev.filter(d => d.path !== deletedPath))
+    setSelectedPath(null)
+  }
+
   const tree: TreeNode[] = buildTree(docs)
   const borderColor = 'color-mix(in srgb, var(--text-primary) 8%, transparent)'
 
@@ -63,7 +68,7 @@ export function FilesView() {
 
       {/* Right: doc content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', maxWidth: '1100px' }}>
-        <DocViewer path={selectedPath} />
+        <DocViewer path={selectedPath} onDelete={handleDelete} />
       </div>
     </div>
   )

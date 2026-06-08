@@ -12,6 +12,7 @@ from .es_client import (
     bm25_search,
     fuzzy_search,
     list_docs,
+    delete_by_path,
 )
 from .embedder import Embedder
 from .indexer import smart_reindex
@@ -113,6 +114,21 @@ def get_doc_content(path: str = Query(..., min_length=1)):
     if not abs_path.exists() or not abs_path.is_file():
         raise HTTPException(status_code=404, detail="File not found")
     return {"path": path, "content": abs_path.read_text(encoding="utf-8", errors="replace")}
+
+
+@app.delete("/docs")
+def delete_doc(path: str = Query(..., min_length=1)):
+    """Delete a doc file from disk and remove its chunks from the index."""
+    try:
+        abs_path = (DOCS_ROOT / path).resolve()
+        abs_path.relative_to(DOCS_ROOT.resolve())
+    except (ValueError, Exception):
+        raise HTTPException(status_code=400, detail="Invalid path")
+    if not abs_path.exists() or not abs_path.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
+    abs_path.unlink()
+    delete_by_path(app.state.es, path)
+    return {"deleted": path}
 
 
 @app.get("/stats")

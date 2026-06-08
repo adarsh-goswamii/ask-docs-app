@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Tooltip } from '@radix-ui/themes'
 import type { TreeNode, TreeFolder } from '../types'
 
 interface FolderTreeProps {
@@ -77,27 +78,28 @@ export function FolderTree({ nodes, selectedPath, onSelectFile }: FolderTreeProp
 
     const isSelected = node.path === selectedPath
     return (
-      <button
-        key={node.path}
-        onClick={() => onSelectFile(node.path)}
-        style={{
-          width: '100%', display: 'flex', alignItems: 'center', gap: 6,
-          paddingLeft: 10 + depth * 14,
-          paddingTop: 5, paddingBottom: 5, paddingRight: 8,
-          background: isSelected ? 'var(--accent-subtle)' : 'transparent',
-          border: 'none', cursor: 'pointer',
-          borderLeft: isSelected ? '2px solid var(--accent)' : '2px solid transparent',
-          color: isSelected ? 'var(--accent)' : 'var(--text-secondary)',
-          fontFamily: 'var(--brand-font-body)', fontSize: 13, textAlign: 'left',
-          transition: 'background 100ms, color 100ms',
-          userSelect: 'none',
-        }}
-      >
-        <FileDocIcon />
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {node.title ?? node.name}
-        </span>
-      </button>
+      <Tooltip key={node.path} content={node.name} side="right" delayDuration={600}>
+        <button
+          onClick={() => onSelectFile(node.path)}
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', gap: 6,
+            paddingLeft: 10 + depth * 14,
+            paddingTop: 5, paddingBottom: 5, paddingRight: 8,
+            background: isSelected ? 'var(--accent-subtle)' : 'transparent',
+            border: 'none', cursor: 'pointer',
+            borderLeft: isSelected ? '2px solid var(--accent)' : '2px solid transparent',
+            color: isSelected ? 'var(--accent)' : 'var(--text-secondary)',
+            fontFamily: 'var(--brand-font-body)', fontSize: 13, textAlign: 'left',
+            transition: 'background 100ms, color 100ms',
+            userSelect: 'none',
+          }}
+        >
+          <FileDocIcon />
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {node.title ?? node.name}
+          </span>
+        </button>
+      </Tooltip>
     )
   }
 

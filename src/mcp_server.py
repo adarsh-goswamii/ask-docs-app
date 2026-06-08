@@ -13,6 +13,7 @@ from .es_client import (
     fuzzy_search as _fuzzy,
     knn_search as _knn,
     list_docs as _list_docs,
+    delete_by_path as _delete_by_path,
 )
 from .indexer import smart_reindex
 
@@ -187,6 +188,32 @@ def get_doc(path: str) -> dict[str, Any]:
         return {"path": path, "found": True, "content": content}
     except OSError:
         return {"path": path, "found": False, "content": None}
+
+
+@mcp.tool()
+def delete_doc(path: str) -> dict[str, Any]:
+    """Delete a markdown document from the docs vault and remove it from the index.
+
+    Permanently deletes the file from disk and purges all its indexed chunks.
+    Pass the 'path' field exactly as returned by list_docs or any search result.
+    Examples: "trm/onboarding.md", "PeakXV-Branding/voice.md".
+
+    Args:
+        path: Relative path to the document to delete.
+
+    Returns:
+        Dict with 'deleted' (the path) on success, or raises on error.
+    """
+    try:
+        abs_path = (DOCS_ROOT / path).resolve()
+        abs_path.relative_to(DOCS_ROOT)
+    except (ValueError, Exception) as e:
+        raise ValueError(f"Invalid path: {e}")
+    if not abs_path.exists() or not abs_path.is_file():
+        raise FileNotFoundError(f"File not found: {path}")
+    abs_path.unlink()
+    _delete_by_path(_es, path)
+    return {"deleted": path}
 
 
 @mcp.tool()

@@ -119,6 +119,11 @@ app = FastAPI(title="docs-rag agent", lifespan=lifespan, docs_url="/swagger")
 app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="vite-assets")
 
 
+@app.get("/favicon.svg")
+def favicon():
+    return FileResponse(STATIC_DIR / "favicon.svg", media_type="image/svg+xml")
+
+
 @app.get("/")
 def index():
     return FileResponse(STATIC_DIR / "index.html")

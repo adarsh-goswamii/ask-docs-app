@@ -12,3 +12,8 @@ export async function fetchDocContent(path: string): Promise<string> {
   const j = await r.json()
   return j.content as string
 }
+
+export async function deleteDoc(path: string): Promise<void> {
+  const r = await fetch(`/docs?path=${encodeURIComponent(path)}`, { method: 'DELETE' })
+  if (!r.ok) throw new Error(`delete failed: ${r.status}`)
+}
