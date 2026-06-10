@@ -6,7 +6,7 @@ export function buildGraphData(docs: DocMeta[]): GraphData {
   const tagsSeen = new Set<string>()
 
   for (const doc of docs) {
-    nodes.push({ id: doc.path, label: doc.title ?? doc.file, type: 'doc' })
+    nodes.push({ id: doc.path, label: doc.title ?? doc.file, type: 'doc', folder: doc.folder })
 
     for (const tag of doc.tags) {
       if (!tagsSeen.has(tag)) {

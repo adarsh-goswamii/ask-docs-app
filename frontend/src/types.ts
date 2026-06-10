@@ -50,6 +50,7 @@ export interface GraphNode {
   id: string
   label: string
   type: 'doc' | 'tag'
+  folder?: string
 }
 
 export interface GraphLink {
