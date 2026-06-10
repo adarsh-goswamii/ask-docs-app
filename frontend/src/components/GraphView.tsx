@@ -180,22 +180,8 @@ export function GraphView() {
               ctx.textAlign = 'center'
               ctx.textBaseline = 'top'
 
-              const textWidth = ctx.measureText(label).width
-              const pad = 3
-              const bgW = textWidth + pad * 2
-              const bgH = 14
-              const bgX = x - bgW / 2
-              const bgY = y + nodeRadius + 4
-
-              // Background pill
-              ctx.fillStyle = 'rgba(0,0,0,0.4)'
-              ctx.beginPath()
-              ctx.roundRect(bgX, bgY, bgW, bgH, 3)
-              ctx.fill()
-
-              // Label text
-              ctx.fillStyle = isDarkRef.current ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)'
-              ctx.fillText(label, x, bgY + 2)
+              ctx.fillStyle = isDarkRef.current ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)'
+              ctx.fillText(label, x, y + nodeRadius + 4)
             }}
             nodePointerAreaPaint={(node: object, color: string, ctx: CanvasRenderingContext2D) => {
               const n = node as { x?: number; y?: number; id: string }
