@@ -148,12 +148,14 @@ export function SourcePanel({ source, onClose }: SourcePanelProps) {
                 onMouseLeave={closeToc}
               >
                 <IconButton variant="ghost" color="gray" aria-label="Table of contents">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-                    <line x1="1" y1="2"  x2="14" y2="2"/>
-                    <line x1="4" y1="5"  x2="13" y2="5"/>
-                    <line x1="4" y1="8"  x2="13" y2="8"/>
-                    <line x1="1" y1="11" x2="14" y2="11"/>
-                    <line x1="7" y1="14" x2="12" y2="14"/>
+                  <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                    <line x1="1.5"  y1="2" x2="1.5"  y2="11"/>
+                    <line x1="3.5"  y1="5" x2="3.5"  y2="11"/>
+                    <line x1="5.5"  y1="5" x2="5.5"  y2="11"/>
+                    <line x1="7.5"  y1="2" x2="7.5"  y2="11"/>
+                    <line x1="9.5"  y1="8" x2="9.5"  y2="11"/>
+                    <line x1="11.5" y1="8" x2="11.5" y2="11"/>
+                    <line x1="13.5" y1="5" x2="13.5" y2="11"/>
                   </svg>
                 </IconButton>
 
