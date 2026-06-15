@@ -140,18 +140,20 @@ export function SourcePanel({ source, onClose }: SourcePanelProps) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-            {/* TOC icon — only shown when there are 2+ headings */}
-            {headings.length >= 2 && (
+            {/* TOC icon — shown whenever there is at least 1 heading */}
+            {headings.length >= 1 && (
               <div
                 style={{ position: 'relative' }}
                 onMouseEnter={openToc}
                 onMouseLeave={closeToc}
               >
                 <IconButton variant="ghost" color="gray" aria-label="Table of contents">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                    <line x1="2" y1="3" x2="12" y2="3"/>
-                    <line x1="2" y1="7" x2="10" y2="7"/>
-                    <line x1="2" y1="11" x2="8" y2="11"/>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                    <line x1="1" y1="2"  x2="14" y2="2"/>
+                    <line x1="4" y1="5"  x2="13" y2="5"/>
+                    <line x1="4" y1="8"  x2="13" y2="8"/>
+                    <line x1="1" y1="11" x2="14" y2="11"/>
+                    <line x1="7" y1="14" x2="12" y2="14"/>
                   </svg>
                 </IconButton>
 
