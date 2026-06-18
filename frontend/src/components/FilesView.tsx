@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Spinner, TextField, IconButton, Tooltip } from '@radix-ui/themes'
 import { FolderTree } from './FolderTree'
@@ -29,6 +29,8 @@ export function FilesView() {
   const [loading, setLoading] = useState(true)
   const [selectedPath, setSelectedPath] = useState<string | null>(null)
   const [search, setSearch] = useState('')
+  const [activeIndex, setActiveIndex] = useState(0)
+  const itemRefs = useRef<(HTMLButtonElement | null)[]>([])
   const location = useLocation()
 
   useEffect(() => {
@@ -78,6 +80,29 @@ export function FilesView() {
           }
         })
 
+  // Reset the keyboard highlight to the top whenever the query changes
+  useEffect(() => { setActiveIndex(0) }, [query])
+
+  // Keep the highlighted result scrolled into view as arrows move it
+  useEffect(() => {
+    itemRefs.current[activeIndex]?.scrollIntoView({ block: 'nearest' })
+  }, [activeIndex])
+
+  function handleSearchKeyDown(e: React.KeyboardEvent) {
+    if (filteredFiles.length === 0) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setActiveIndex(i => Math.min(i + 1, filteredFiles.length - 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setActiveIndex(i => Math.max(i - 1, 0))
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      const file = filteredFiles[activeIndex]
+      if (file) setSelectedPath(file.path)
+    }
+  }
+
   return (
     <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
       {/* Left: folder tree */}
@@ -108,6 +133,7 @@ export function FilesView() {
               placeholder="Filter files…"
               value={search}
               onChange={e => setSearch(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
             >
               <TextField.Slot>
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
@@ -144,17 +170,24 @@ export function FilesView() {
                 }}>
                   No files match.
                 </p>
-              ) : filteredFiles.map(file => {
+              ) : filteredFiles.map((file, idx) => {
                 const isSelected = file.path === selectedPath
+                const isActive = idx === activeIndex
                 return (
                   <Tooltip key={file.path} content={file.name} side="right" delayDuration={600}>
                     <button
-                      onClick={() => setSelectedPath(file.path)}
+                      ref={el => { itemRefs.current[idx] = el }}
+                      onClick={() => { setSelectedPath(file.path); setActiveIndex(idx) }}
+                      onMouseEnter={() => setActiveIndex(idx)}
                       style={{
                         width: '100%', display: 'flex', alignItems: 'center', gap: 6,
                         paddingLeft: 10,
                         paddingTop: 5, paddingBottom: 5, paddingRight: 8,
-                        background: isSelected ? 'var(--accent-subtle)' : 'transparent',
+                        background: isSelected
+                          ? 'var(--accent-subtle)'
+                          : isActive
+                            ? 'color-mix(in srgb, var(--text-primary) 6%, transparent)'
+                            : 'transparent',
                         border: 'none', cursor: 'pointer',
                         borderLeft: isSelected ? '2px solid var(--accent)' : '2px solid transparent',
                         color: isSelected ? 'var(--accent)' : 'var(--text-secondary)',
