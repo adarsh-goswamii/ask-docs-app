@@ -16,6 +16,7 @@
     "react-force-graph-2d": "^1.25.6",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.6.0",
+    "react-zoom-pan-pinch": "^4.0.3",
     "rehype-highlight": "^7.0.2",
     "remark-gfm": "^4.0.1",
     "unist-util-visit": "^5.1.0"
