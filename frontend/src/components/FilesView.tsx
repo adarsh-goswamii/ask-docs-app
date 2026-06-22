@@ -217,7 +217,12 @@ export function FilesView() {
 
       {/* Right: doc content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <DocViewer path={selectedPath} onDelete={handleDelete} />
+        <DocViewer
+          path={selectedPath}
+          onDelete={handleDelete}
+          allFiles={allFiles}
+          onNavigate={setSelectedPath}
+        />
       </div>
     </div>
   )

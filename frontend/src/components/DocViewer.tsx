@@ -1,12 +1,17 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { Spinner, Callout, AlertDialog, Button, Flex } from '@radix-ui/themes'
-import { BlogPost } from '@adarsh_goswami/design'
+import { BlogPost } from './BlogPost'
 import { fetchDocContent, deleteDoc } from '../api/docs'
+import { makeWikiResolver } from '../utils/wikiLink'
 import { DocOutline } from './DocOutline'
 
 interface DocViewerProps {
   path: string | null
   onDelete?: (path: string) => void
+  /** All vault file paths — used to resolve [[wiki-links]]. */
+  allFiles?: string[]
+  /** Open another doc (e.g. when a wiki-link is clicked). */
+  onNavigate?: (path: string) => void
 }
 
 function Centered({ children }: { children: React.ReactNode }) {
@@ -21,8 +26,9 @@ function Centered({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function DocViewer({ path, onDelete }: DocViewerProps) {
+export function DocViewer({ path, onDelete, allFiles, onNavigate }: DocViewerProps) {
   const [content, setContent] = useState<string | null>(null)
+  const resolveWikiLink = useMemo(() => makeWikiResolver(allFiles ?? []), [allFiles])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -146,7 +152,12 @@ export function DocViewer({ path, onDelete }: DocViewerProps) {
             </AlertDialog.Root>
           </div>
 
-          <BlogPost content={content ?? ''} />
+          <BlogPost
+            content={content ?? ''}
+            fill
+            resolveWikiLink={resolveWikiLink}
+            onWikiLink={(_target, resolved) => onNavigate?.(resolved)}
+          />
         </div>
       </div>
       <DocOutline scrollRef={scrollRef} contentRef={contentRef} content={content} />

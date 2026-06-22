@@ -1,5 +1,5 @@
 import { Button, Callout } from '@radix-ui/themes'
-import { BlogPost } from '@adarsh_goswami/design'
+import { BlogPost } from '../BlogPost'
 import type { Source } from '../../types'
 
 interface AssistantMessageProps {

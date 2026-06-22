@@ -1,0 +1,161 @@
+import { useEffect, useRef, useState } from 'react'
+import mermaid from 'mermaid'
+import { Box, Text } from '@radix-ui/themes'
+
+let renderCounter = 0
+
+// Resolve a CSS custom property to a concrete color in the element's context.
+// Mermaid runs color math (khroma) on these, so they must be real values, not
+// `var(...)` references — guard against an unresolved var leaking through.
+function cssVar(el: Element, name: string, fallback: string): string {
+  const v = getComputedStyle(el).getPropertyValue(name).trim()
+  return v && !v.includes('var(') ? v : fallback
+}
+
+// Build mermaid theme variables from the live app palette so diagrams match the
+// surrounding surface (works in light or dark mode). Derived from the element
+// the diagram is actually rendered in, so inherited custom props resolve.
+function themeFrom(el: Element) {
+  const surface = cssVar(el, '--bg-raised', '#16181d')
+  const base = cssVar(el, '--bg-base', surface)
+  const textPrimary = cssVar(el, '--text-primary', '#e6e6e6')
+  const textSecondary = cssVar(el, '--text-secondary', '#9aa0aa')
+  const accent = cssVar(el, '--accent', '#3b82f6')
+  const accentSubtle = cssVar(el, '--accent-subtle', base)
+  const borderMid = cssVar(el, '--border-mid', '#3a3f47')
+  const borderSoft = cssVar(el, '--border-soft', borderMid)
+  const fontBody = cssVar(el, '--brand-font-body', 'inherit')
+
+  return {
+    background: surface,
+    fontFamily: fontBody,
+    // Default nodes
+    primaryColor: accentSubtle,
+    mainBkg: accentSubtle,
+    primaryTextColor: textPrimary,
+    nodeTextColor: textPrimary,
+    primaryBorderColor: accent,
+    nodeBorder: accent,
+    // Secondary / tertiary surfaces
+    secondaryColor: base,
+    secondaryTextColor: textPrimary,
+    secondaryBorderColor: borderMid,
+    tertiaryColor: base,
+    tertiaryTextColor: textPrimary,
+    tertiaryBorderColor: borderMid,
+    // Edges + general text
+    lineColor: textSecondary,
+    textColor: textPrimary,
+    titleColor: textSecondary,
+    edgeLabelBackground: surface,
+    // Subgraph clusters
+    clusterBkg: base,
+    clusterBorder: borderSoft,
+    // Sequence-diagram specifics
+    actorBkg: accentSubtle,
+    actorBorder: accent,
+    actorTextColor: textPrimary,
+    actorLineColor: textSecondary,
+    signalColor: textSecondary,
+    signalTextColor: textPrimary,
+    labelBoxBkgColor: base,
+    labelBoxBorderColor: borderMid,
+    labelTextColor: textPrimary,
+    loopTextColor: textPrimary,
+    noteBkgColor: base,
+    noteTextColor: textPrimary,
+    noteBorderColor: borderMid,
+    activationBkgColor: base,
+    activationBorderColor: borderMid,
+    sequenceNumberColor: surface,
+  }
+}
+
+export function Mermaid({ chart }: { chart: string }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [svg, setSvg] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const host = containerRef.current ?? document.documentElement
+
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      // Render diagrams at their natural size; the container's overflowX:auto
+      // then gives a horizontal scrollbar for wide diagrams instead of shrinking
+      // them to fit (which makes labels unreadable).
+      flowchart: { useMaxWidth: false },
+      sequence: { useMaxWidth: false },
+      themeVariables: themeFrom(host),
+    })
+
+    const id = `mermaid-${renderCounter++}`
+    mermaid
+      .render(id, chart)
+      .then(({ svg }) => {
+        if (!cancelled) {
+          setSvg(svg)
+          setError(null)
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : String(err))
+          setSvg('')
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [chart])
+
+  if (error) {
+    return (
+      <Box
+        ref={containerRef}
+        mb="4"
+        p="4"
+        style={{
+          borderRadius: 'var(--brand-radius-lg)',
+          border: '1px solid var(--border-soft)',
+          backgroundColor: 'var(--bg-raised)',
+        }}
+      >
+        <Text as="p" size="2" mb="2" style={{ color: 'var(--accent-bright)' }}>
+          Diagram error: {error}
+        </Text>
+        <pre
+          style={{
+            margin: 0,
+            fontSize: 'var(--brand-text-sm)',
+            fontFamily: 'var(--brand-font-mono)',
+            color: 'var(--text-secondary)',
+            whiteSpace: 'pre-wrap',
+          }}
+        >
+          {chart}
+        </pre>
+      </Box>
+    )
+  }
+
+  return (
+    <Box
+      ref={containerRef}
+      mb="4"
+      p="4"
+      className="mermaid-diagram"
+      style={{
+        borderRadius: 'var(--brand-radius-lg)',
+        border: '1px solid var(--border-soft)',
+        backgroundColor: 'var(--bg-raised)',
+        overflowX: 'auto',
+        textAlign: 'center',
+      }}
+      // SVG is generated by mermaid from trusted vault content.
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  )
+}

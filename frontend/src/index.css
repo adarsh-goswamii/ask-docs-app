@@ -3,6 +3,9 @@
 @import "@adarsh_goswami/design/dist/tailwind.config.css";
 @import "@radix-ui/themes/styles.css";
 
+/* Override the design package's body font (DM Sans) with Poppins */
+:root { --brand-font-body: 'Poppins', sans-serif; }
+
 * { box-sizing: border-box; }
 html, body, #root {
   height: 100%;

@@ -10,10 +10,15 @@
   "dependencies": {
     "@adarsh_goswami/design": "^0.1.19-dev",
     "@radix-ui/themes": "^3.3.0",
+    "mermaid": "^11.15.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-force-graph-2d": "^1.25.6",
-    "react-router-dom": "^7.6.0"
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.6.0",
+    "rehype-highlight": "^7.0.2",
+    "remark-gfm": "^4.0.1",
+    "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",

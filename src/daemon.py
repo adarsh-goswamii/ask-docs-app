@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from .config import INDEX_NAME, DOCS_ROOT, EXCLUDE_DIRS, SUPPORTED_EXTENSIONS
+from .config import INDEX_NAME, DOCS_ROOT, LIST_EXCLUDE_DIRS, SUPPORTED_EXTENSIONS
 from .es_client import (
     get_client,
     create_index,
@@ -108,7 +108,7 @@ def list_all_files():
         if f.suffix.lower() not in SUPPORTED_EXTENSIONS:
             continue
         rel = f.relative_to(root)
-        if any(part in EXCLUDE_DIRS for part in rel.parts[:-1]):
+        if any(part in LIST_EXCLUDE_DIRS for part in rel.parts[:-1]):
             continue
         paths.append(str(rel))
     return {"files": paths}

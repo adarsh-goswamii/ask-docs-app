@@ -1,0 +1,108 @@
+.blog-post {
+  max-width: var(--brand-layout-prose-max);
+  margin: 0 auto;
+  padding: var(--sp-8) var(--sp-4);
+}
+
+/* Fill the host container (doc viewer) rather than centering in a prose column. */
+.blog-post--fill {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.blog-post__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-family: var(--brand-font-body);
+  font-size: var(--brand-text-sm);
+  padding: 0;
+  margin-bottom: var(--sp-8);
+  transition: color var(--brand-duration-fast) var(--brand-ease-out);
+}
+
+.blog-post__back:hover {
+  color: var(--text-secondary);
+}
+
+.blog-post__title {
+  font-family: var(--brand-font-display);
+  font-size: var(--brand-text-3xl);
+  font-weight: var(--brand-font-bold);
+  color: var(--text-primary);
+  line-height: var(--brand-leading-tight);
+  margin: 0 0 var(--sp-4) 0;
+}
+
+.blog-post__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-8);
+  padding-bottom: var(--sp-6);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.blog-post__meta-text {
+  font-family: var(--brand-font-body);
+  font-size: var(--brand-text-sm);
+  color: var(--text-muted);
+}
+
+.blog-post__meta-dot {
+  color: var(--border-mid);
+  font-size: var(--brand-text-sm);
+  user-select: none;
+}
+
+.blog-post__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.blog-post__tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--sp-2);
+  border-radius: var(--brand-radius-full);
+  background: var(--accent-subtle);
+  color: var(--accent);
+  font-family: var(--brand-font-body);
+  font-size: var(--brand-text-xs);
+  font-weight: var(--brand-font-medium);
+  letter-spacing: var(--brand-tracking-wide);
+  text-transform: uppercase;
+}
+
+/* Obsidian-style internal links: [[okta]] -> _tags/okta.md */
+.blog-post .wiki-link {
+  color: var(--accent);
+  text-decoration: none;
+  cursor: pointer;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  transition: background 100ms, border-color 100ms;
+  border-radius: 2px;
+}
+
+.blog-post .wiki-link:hover {
+  background: var(--accent-subtle);
+  border-bottom-color: var(--accent);
+}
+
+/* Unresolved link — no matching note in the vault. */
+.blog-post .wiki-link--unresolved {
+  color: var(--text-muted);
+  cursor: help;
+  border-bottom: 1px dashed color-mix(in srgb, var(--text-muted) 50%, transparent);
+}
+
+.blog-post .wiki-link--unresolved:hover {
+  background: transparent;
+}

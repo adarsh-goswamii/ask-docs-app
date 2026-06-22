@@ -12,7 +12,12 @@ EMBED_DIMS = int(os.environ.get("EMBED_DIMS", "768"))
 
 DAEMON_URL = os.environ.get("DAEMON_URL", "http://127.0.0.1:8000")
 
+# Dirs skipped by the RAG indexer (kept out of search).
 EXCLUDE_DIRS = {".rag", ".obsidian", ".git", "node_modules", "_tags", ".claude"}
+
+# Dirs hidden from the file browser/tree. `_tags` stays visible: it holds the
+# tag hub files that wiki-links ([[okta]] -> _tags/okta.md) resolve to.
+LIST_EXCLUDE_DIRS = EXCLUDE_DIRS - {"_tags"}
 
 SUPPORTED_EXTENSIONS = frozenset({".md", ".svg"})
 
